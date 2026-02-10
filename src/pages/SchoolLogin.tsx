@@ -4,8 +4,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { GraduationCap, LogIn, AlertCircle } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function SchoolLogin() {
@@ -36,88 +36,72 @@ export default function SchoolLogin() {
 
   const displayName = schoolSlug
     ? schoolSlug.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")
-    : "EduManage";
+    : null;
 
   return (
-    <div className="flex min-h-screen">
-      {/* Left panel */}
-      <div className="hidden lg:flex lg:w-1/2 gradient-hero items-center justify-center p-12">
-        <div className="max-w-md text-center animate-fade-in">
-          <div className="mx-auto mb-8 flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/20">
-            <GraduationCap className="h-10 w-10 text-primary-foreground" />
-          </div>
-          <h1 className="mb-4 font-heading text-4xl font-bold text-primary-foreground">
-            {displayName}
-          </h1>
-          <p className="text-lg text-primary-foreground/70">
-            Streamline your school management with a powerful, intuitive platform.
-          </p>
-        </div>
-      </div>
-
-      {/* Right panel */}
-      <div className="flex w-full items-center justify-center p-8 lg:w-1/2">
-        <Card className="w-full max-w-md animate-fade-in shadow-card border-border">
-          <CardHeader className="text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 lg:hidden">
-              <GraduationCap className="h-6 w-6 text-primary" />
+    <div className="flex min-h-screen items-center justify-center gradient-auth p-4">
+      <Card className="w-full max-w-md bg-muted/95 backdrop-blur border-none shadow-2xl">
+        <CardHeader className="text-center pb-2">
+          <CardTitle className="font-heading text-3xl font-bold">
+            {displayName ? `${displayName} Login` : "Login"}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6 px-8 pb-8">
+          {error && (
+            <div className="flex items-center gap-2 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              {error}
             </div>
-            <CardTitle className="font-heading text-2xl">Sign in</CardTitle>
-            <CardDescription>
-              {schoolSlug ? `Access your ${displayName} account` : "Sign in to your account"}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {error && (
-                <div className="flex items-center gap-2 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
-                  <AlertCircle className="h-4 w-4 shrink-0" />
-                  {error}
-                </div>
+          )}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-2">
+              <Label htmlFor="email" className="font-semibold">School Email id</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="bg-background border-border"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password" className="font-semibold">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="bg-background border-border"
+                required
+              />
+            </div>
+            <Button
+              type="submit"
+              className="w-full rounded-full bg-[hsl(270,80%,50%)] hover:bg-[hsl(270,80%,45%)] text-primary-foreground"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
+              ) : (
+                "Continue"
               )}
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@school.edu"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? (
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
-                ) : (
-                  <>
-                    <LogIn className="mr-2 h-4 w-4" /> Sign in
-                  </>
-                )}
-              </Button>
-            </form>
-          </CardContent>
-          <CardFooter className="justify-center">
-            <p className="text-sm text-muted-foreground">
-              Don't have an account?{" "}
-              <Link to="/signup" className="text-primary hover:underline font-medium">
-                Create account
-              </Link>
-            </p>
-          </CardFooter>
-        </Card>
-      </div>
+            </Button>
+          </form>
+
+          <div className="text-center space-y-3">
+            <p className="text-sm text-muted-foreground">or</p>
+            <p className="text-sm text-muted-foreground">Don't have an account?</p>
+            <Button
+              variant="ghost"
+              className="w-full rounded-full bg-[hsl(270,80%,50%)] hover:bg-[hsl(270,80%,45%)] text-primary-foreground"
+              asChild
+            >
+              <Link to="/signup">Create New School Account</Link>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
