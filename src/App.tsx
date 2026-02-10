@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import SchoolLogin from "./pages/SchoolLogin";
+import SignUp from "./pages/SignUp";
 import Dashboard from "./pages/Dashboard";
 import SchoolsManagement from "./pages/management/SchoolsManagement";
 import ClassesManagement from "./pages/management/ClassesManagement";
@@ -30,6 +31,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<SchoolLogin />} />
+            <Route path="/signup" element={<SignUp />} />
             <Route path="/:schoolSlug/login" element={<SchoolLogin />} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/dashboard/schools" element={<ProtectedRoute allowedRoles={["super_admin"]}><SchoolsManagement /></ProtectedRoute>} />

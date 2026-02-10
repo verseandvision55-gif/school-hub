@@ -1,42 +1,52 @@
 import { useState } from "react";
-import { useNavigate, useParams, Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { GraduationCap, LogIn, AlertCircle } from "lucide-react";
+import { GraduationCap, UserPlus, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-export default function SchoolLogin() {
-  const { schoolSlug } = useParams<{ schoolSlug: string }>();
+export default function SignUp() {
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const { signIn } = useAuth();
+  const { signUp } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setIsLoading(true);
 
-    const { error } = await signIn(email, password);
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters.");
+      return;
+    }
+
+    setIsLoading(true);
+    const { error } = await signUp(email, password, fullName);
     setIsLoading(false);
 
     if (error) {
       setError(error.message);
     } else {
-      toast({ title: "Welcome back!", description: "You've been logged in successfully." });
-      navigate("/dashboard");
+      toast({
+        title: "Account created!",
+        description: "Please check your email to verify your account before signing in.",
+      });
+      navigate("/login");
     }
   };
-
-  const displayName = schoolSlug
-    ? schoolSlug.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")
-    : "EduManage";
 
   return (
     <div className="flex min-h-screen">
@@ -47,10 +57,10 @@ export default function SchoolLogin() {
             <GraduationCap className="h-10 w-10 text-primary-foreground" />
           </div>
           <h1 className="mb-4 font-heading text-4xl font-bold text-primary-foreground">
-            {displayName}
+            Join EduManage
           </h1>
           <p className="text-lg text-primary-foreground/70">
-            Streamline your school management with a powerful, intuitive platform.
+            Create your account and start managing your school with ease.
           </p>
         </div>
       </div>
@@ -62,10 +72,8 @@ export default function SchoolLogin() {
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 lg:hidden">
               <GraduationCap className="h-6 w-6 text-primary" />
             </div>
-            <CardTitle className="font-heading text-2xl">Sign in</CardTitle>
-            <CardDescription>
-              {schoolSlug ? `Access your ${displayName} account` : "Sign in to your account"}
-            </CardDescription>
+            <CardTitle className="font-heading text-2xl">Create account</CardTitle>
+            <CardDescription>Enter your details to get started</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -75,6 +83,16 @@ export default function SchoolLogin() {
                   {error}
                 </div>
               )}
+              <div className="space-y-2">
+                <Label htmlFor="fullName">Full Name</Label>
+                <Input
+                  id="fullName"
+                  placeholder="John Doe"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  required
+                />
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -97,12 +115,23 @@ export default function SchoolLogin() {
                   required
                 />
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  placeholder="••••••••"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                />
+              </div>
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? (
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
                 ) : (
                   <>
-                    <LogIn className="mr-2 h-4 w-4" /> Sign in
+                    <UserPlus className="mr-2 h-4 w-4" /> Create account
                   </>
                 )}
               </Button>
@@ -110,9 +139,9 @@ export default function SchoolLogin() {
           </CardContent>
           <CardFooter className="justify-center">
             <p className="text-sm text-muted-foreground">
-              Don't have an account?{" "}
-              <Link to="/signup" className="text-primary hover:underline font-medium">
-                Create account
+              Already have an account?{" "}
+              <Link to="/login" className="text-primary hover:underline font-medium">
+                Sign in
               </Link>
             </p>
           </CardFooter>
