@@ -86,10 +86,9 @@ export default function SignUp() {
                     </div>
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="primary">Primary School</SelectItem>
-                    <SelectItem value="secondary">Secondary School</SelectItem>
-                    <SelectItem value="high">High School</SelectItem>
-                    <SelectItem value="college">College</SelectItem>
+                    <SelectItem value="cbse">CBSE</SelectItem>
+                    <SelectItem value="matriculation">Matriculation</SelectItem>
+                    <SelectItem value="stateboard">State Board</SelectItem>
                   </SelectContent>
                 </Select>
                 <div className="relative">
