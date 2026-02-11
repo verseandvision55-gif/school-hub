@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -69,7 +69,9 @@ export default function RoleLogin() {
   const [isLoading, setIsLoading] = useState(false);
   const { signIn } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
+  const schoolName = (location.state as any)?.schoolName || "School";
 
   const handleLogin = async (email: string, password: string) => {
     setIsLoading(true);
@@ -93,8 +95,9 @@ export default function RoleLogin() {
         </Link>
       </Button>
 
-      <div className="absolute top-6 left-1/2 -translate-x-1/2">
+      <div className="absolute top-6 left-1/2 -translate-x-1/2 flex items-center gap-2">
         <GraduationCap className="h-8 w-8 text-primary-foreground" />
+        <span className="text-primary-foreground font-heading font-bold text-lg">{schoolName}</span>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-3xl">
