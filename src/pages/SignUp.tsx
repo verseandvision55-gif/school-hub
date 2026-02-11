@@ -1,12 +1,19 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, School, Globe, Mail, MapPin, User, Phone, Lock, AlertCircle } from "lucide-react";
+import { ArrowLeft, School, Globe, Mail, MapPin, User, Phone, Lock, AlertCircle, Copy, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+
+function generateSchoolCode(schoolName: string): string {
+  const prefix = schoolName.replace(/[^a-zA-Z]/g, "").substring(0, 3).toUpperCase().padEnd(3, "X");
+  const numbers = String(Math.floor(Math.random() * 900) + 100);
+  return prefix + numbers;
+}
 
 export default function SignUp() {
   const [schoolName, setSchoolName] = useState("");
@@ -19,6 +26,8 @@ export default function SignUp() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [createdCode, setCreatedCode] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const { signUp } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -33,19 +42,83 @@ export default function SignUp() {
     }
 
     setIsLoading(true);
-    const { error } = await signUp(adminEmail, password, adminName);
+
+    // 1. Sign up the user
+    const { error: signUpError } = await signUp(adminEmail, password, adminName);
+    if (signUpError) {
+      setIsLoading(false);
+      setError(signUpError.message);
+      return;
+    }
+
+    // 2. Generate school code and create school record
+    const schoolCode = generateSchoolCode(schoolName);
+    const slug = schoolName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+
+    const { error: schoolError } = await supabase.from("schools").insert({
+      name: schoolName,
+      slug,
+      email: schoolEmail,
+      address: schoolAddress,
+      school_code: schoolCode,
+    });
+
     setIsLoading(false);
 
-    if (error) {
-      setError(error.message);
-    } else {
-      toast({
-        title: "Account created!",
-        description: "Please check your email to verify your account before signing in.",
-      });
-      navigate("/login");
+    if (schoolError) {
+      setError("Account created but failed to register school: " + schoolError.message);
+      return;
+    }
+
+    setCreatedCode(schoolCode);
+    toast({
+      title: "School account created!",
+      description: "Please save your school code and verify your email.",
+    });
+  };
+
+  const handleCopy = () => {
+    if (createdCode) {
+      navigator.clipboard.writeText(createdCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     }
   };
+
+  if (createdCode) {
+    return (
+      <div className="flex min-h-screen items-center justify-center gradient-auth p-4">
+        <Card className="w-full max-w-md bg-muted/95 backdrop-blur border-none shadow-2xl">
+          <CardContent className="px-8 py-10 text-center space-y-6">
+            <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+              <School className="h-8 w-8 text-primary" />
+            </div>
+            <h2 className="font-heading text-2xl font-bold">School Created!</h2>
+            <p className="text-sm text-muted-foreground">
+              Your unique school code is:
+            </p>
+            <div className="flex items-center justify-center gap-3">
+              <span className="font-mono text-4xl font-bold tracking-[0.3em] text-primary">
+                {createdCode}
+              </span>
+              <Button variant="ghost" size="icon" onClick={handleCopy}>
+                {copied ? <Check className="h-5 w-5 text-green-500" /> : <Copy className="h-5 w-5" />}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Share this code with your teachers so they can log in. Please also check your email to verify your account.
+            </p>
+            <Button
+              className="w-full rounded-full bg-[hsl(270,80%,50%)] hover:bg-[hsl(270,80%,45%)] text-primary-foreground"
+              onClick={() => navigate("/login")}
+            >
+              Go to Login
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center gradient-auth p-4">
@@ -70,7 +143,6 @@ export default function SignUp() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* School Details */}
             <div>
               <h2 className="font-heading text-lg font-bold mb-3">School Details</h2>
               <div className="space-y-3">
@@ -102,7 +174,6 @@ export default function SignUp() {
               </div>
             </div>
 
-            {/* Admin Details */}
             <div>
               <h2 className="font-heading text-lg font-bold mb-3">Admin Details</h2>
               <div className="space-y-3">
